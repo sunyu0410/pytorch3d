@@ -50,7 +50,7 @@ def ravel_index(idx, dims) -> torch.Tensor:
 
 
 @torch.no_grad()
-def cubify(voxels, thresh, device=None, align: str = "topleft") -> Meshes:
+def cubify(voxels, thresh, device=None, align: str = "topleft", norm:bool=False) -> Meshes:
     r"""
     Converts a voxel to a mesh by replacing each occupied voxel with a cube
     consisting of 12 faces and 8 vertices. Shared vertices are merged, and
@@ -207,9 +207,11 @@ def cubify(voxels, thresh, device=None, align: str = "topleft") -> Meshes:
         z = z - 0.5
 
     margin = 0.0 if align == "corner" else 1.0
-    y = y * 2.0 / (H - margin) - 1.0
-    x = x * 2.0 / (W - margin) - 1.0
-    z = z * 2.0 / (D - margin) - 1.0
+
+    if norm:
+        y = y * 2.0 / (H - margin) - 1.0
+        x = x * 2.0 / (W - margin) - 1.0
+        z = z * 2.0 / (D - margin) - 1.0
 
     # ((H+1)(W+1)(D+1)) x 3
     grid_verts = torch.stack((x, y, z), dim=3).view(-1, 3)
