@@ -236,9 +236,28 @@ def cubify(voxels, thresh, device=None, align: str = "topleft", norm:bool=False)
     idleverts = idleverts.view(N, num_verts)
     idlenum = idleverts.cumsum(1)
 
-    verts_list = [
-        grid_verts.index_select(0, (idleverts[n] == 0).nonzero(as_tuple=False)[:, 0])
-        for n in range(N)
+    # verts_list = [
+    #     grid_verts.index_select(0, (idleverts[n] == 0).nonzero(as_tuple=False)[:, 0])
+    #     for n in range(N)
+    # ]
+
+    n = 0
+    b = grid_verts.index_select(0, (idleverts[n] == 0).nonzero(as_tuple=False)[:, 0])
+    b = torch.index_select(b, 1, torch.tensor([2, 1, 0]))
+
+    # RAS
+    a = torch.tensor([[   3.        ,    0.        ,    0.        , -177.95599365-1.5],
+        [   0.        ,    3.        ,    0.        ,   11.31900024-1.5],
+        [   0.        ,    0.        ,    3.00000191,   94.30180359-1.5],
+        [   0.        ,    0.        ,    0.        ,    1.        ]]).double()
+
+    # To LPS (default to load in 3D Slicer)
+    # Flip first two rows
+    a = (a.T*torch.tensor([-1,-1,1,1])).T
+    
+    # a = torch.eye(4).double()
+
+    verts_list = [(a @ torch.column_stack([b, torch.ones(b.size(0))]).double().T).T[:,:3]
     ]
     faces_list = [nface - idlenum[n][nface] for n, nface in enumerate(faces_list)]
 
