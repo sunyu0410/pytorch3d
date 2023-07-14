@@ -23,6 +23,7 @@ def get_1d_com(arr):
 
 def get_3d_com(tensor):
     # tensor.shape: (N, C, H, W), N=1
+    assert tensor.ndim==4 and tensor.size(0)==1
     return torch.stack(
         [get_1d_com(tensor.sum(idx)) for idx in ((0,2,3), (0,1,3), (0,1,2))]
     )
@@ -88,78 +89,34 @@ def cvt_aff_matrix(m, dims):
     x, y, z = dims
 
     # Change the offsets
-    matrix[0, -1] = x/2 * (1 - matrix[0,0])
-    matrix[1, -1] = y/2 * (1 - matrix[1,1])
-    matrix[2, -1] = z/2 * (1 - matrix[2,2])
+    matrix[0, -1] = x/2 * (1 - matrix[0,0]) + m[0,0,-1] * (x-1)/2
+    matrix[1, -1] = y/2 * (1 - matrix[1,1]) + m[0,1,-1] * (y-1)/2
+    matrix[2, -1] = z/2 * (1 - matrix[2,2]) + m[0,2,-1] * (z-1)/2
 
     matrix = torch.inverse(matrix).unsqueeze(0)
     return matrix
 
 if __name__ == "__main__":
-    d, v = put_1d_com(3.14)
-    img1 = torch.zeros(10).float()
-    img1[d-1], img1[d] = 1, v
-
-    com1 = get_1d_com(img1)
-
-    img2 = put_3d_com((1.1, 1.2, 1.3), (3,100,100))
-    com2 = get_3d_com(img2)
-
-    # Define the affine matrix
-    # Note that this is relative, [-1, 1], which define the boundary
     affine_matrix = torch.tensor(
-        [[1, 0, 0, 0],
+        [[1, 0, 0, 0.1],
          [0, 1, 0, 0],
-         [0, 0, 1, 0.1]],
+         [0, 0, 1, 0.3]],
         dtype=torch.float,
         requires_grad=True
     ).unsqueeze(0)
 
-    # img = torch.zeros(1,1,3,5,5)
-    # img[0,0,:,1,1] = 1
-
-    print(F.affine_grid(affine_matrix, (1,1,3,4,5), align_corners=True))
-    # sys.exit()
-
     img = put_3d_com((2.1, 32, 43), (3,100,100)).unsqueeze(0)
-    print(f'{get_3d_com(img.squeeze(0))}')
-    grid = F.affine_grid(affine_matrix, (1,1,3,100,100), align_corners=True)
-    warped = F.grid_sample(img, grid, align_corners=True)
-    print(f'warped sum: {warped.sum()}')
 
-    print(f'{get_3d_com(warped.squeeze(0))} get_3d_com(warped.squeeze(0)): ')
+    print(f'original: {get_3d_com(img.squeeze(0))}')
 
-    print('Ground truth (matmul)')
-    # matrix = torch.cat((affine_matrix.clone().detach()[0], torch.tensor([[0,0,0,1]])))
-    # matrix = torch.inverse(matrix)[:-1, :].unsqueeze(0)
-    # matrix[0, :, -1] = matrix[0,:,-1] * torch.tensor(img.shape[-3:]) / 2
+    grid = F.affine_grid(affine_matrix, (1,1,100,100,3), align_corners=True)
+    warped = F.grid_sample(img.permute((0,1,4,3,2)), grid, align_corners=True).permute((0,1,4,3,2))
 
-
-
-    # matrix = torch.inverse(torch.tensor(
-    #     [[1.0, 0, 0, 3+(0-1)*3],
-    #      [0, 0.6, 0, 50+(-0.6)*50],
-    #      [0, 0, 1.0, 50+(0-1)*50],
-    #      [0, 0, 0, 1]]
-    # )).unsqueeze(0)
+    print(f'get_3d_com: {get_3d_com(warped.squeeze(0))}')
 
     matrix = cvt_aff_matrix(affine_matrix, (3, 100, 100))
     torch.matmul(matrix[0], torch.tensor([2.1, 32, 43, 1]))
-    print(f'{torch.matmul(matrix[0], torch.tensor([2.1, 32, 43, 1]))}')
+    print(f'matmul: {torch.matmul(matrix[0], torch.tensor([2.1, 32, 43, 1]))[:-1]}')
 
-    import matplotlib.pyplot as plt
-    fig, axes = plt.subplots(1,3)
-    axes[0].imshow(warped.detach().numpy()[0,0,0,:,:])
-    axes[1].imshow(warped.detach().numpy()[0,0,1,:,:])
-    axes[2].imshow(warped.detach().numpy()[0,0,2,:,:])
-    plt.show()
-
+    print(f'warped sum: {warped.sum()}')
     print('end')
-
-    # TODO - why 46.5000, 43.0000 never changes
-    # D:\Work\pytorch3d (main -> origin) 
-    # (torch) λ python warp_mesh.py
-    # tensor([ 1.6034, 46.5000, 43.0000], grad_fn=<StackBackward0>) get_3d_com(warped.squeeze(0)): 
-    # Ground truth (matmul)
-    # tensor([ 2.1000, 43.8000,  8.6000], grad_fn=<MvBackward0>)
-    # end
