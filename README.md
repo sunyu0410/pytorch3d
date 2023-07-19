@@ -3,6 +3,21 @@
 [![CircleCI](https://circleci.com/gh/facebookresearch/pytorch3d.svg?style=svg)](https://circleci.com/gh/facebookresearch/pytorch3d)
 [![Anaconda-Server Badge](https://anaconda.org/pytorch3d/pytorch3d/badges/version.svg)](https://anaconda.org/pytorch3d/pytorch3d)
 
+# Branch `mesh`
+* Merge with `voxel`
+  * Modified `cubify()` to take the absolute positation and apply the transformation. See `example.py`
+  * Has a built version for Python 3.8 on Windows
+* Developing a method to warp a coordinate using the flow matrix. See `warp_mesh.py`. 
+  * Currently verifying the coordinate with ground truth using an affine grid(the ground truth can be calculated using matrix), while maintaining the gradient. In reality, this will be deformable registration. Using affine is because we can get the exact ground truth.
+* Developing a class which takes an NIfTI and converts to mesh. Here are the features in mind.
+  * to mesh
+  * save mesh as obj
+  * sample points on mesh
+  * save points as fiducials
+  * apply affine transformation
+  * apply flow matrix (deformable warping)
+  * keep gradient for operations -> possibly link with `offset_verts()`
+
 # Introduction
 
 PyTorch3D provides efficient, reusable components for 3D Computer Vision research with [PyTorch](https://pytorch.org).
