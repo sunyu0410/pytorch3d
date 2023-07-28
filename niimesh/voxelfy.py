@@ -3,7 +3,6 @@ import torch.nn.functional as F
 from pytorch3d.structures import Meshes, utils as struct_utils
 from typing import Union, Tuple, Sequence
 from pytorch3d.ops.cubify import ravel_index, unravel_index
-import pdb
 
 # This is not in the eralier version, copied from version 0.7.4
 def meshgrid_ij(
@@ -97,7 +96,6 @@ def taubin_smoothing(
     return mesh
 
 def column_stack(tensors):
-    pdb.set_trace()
     hs = [t.size(0) for t in tensors]
     ws = [t.size(1) for t in tensors]
     assert len(set(hs)) == 1
