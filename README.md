@@ -18,6 +18,14 @@
   * apply flow matrix (deformable warping)
   * keep gradient for operations -> possibly link with `offset_verts()`
 
+## Installation notes
+The `from pytorch3d import _C` issue is seen on Windows and Linux, this fall back solution that works on the cluster:
+```bash
+pip install 'torch==1.6.0+cu101' -f https://download.pytorch.org/whl/torch_stable.html
+pip install 'torchvision==0.7.0+cu101' -f https://download.pytorch.org/whl/torch_stable.html
+pip install 'pytorch3d==0.2.5' # later version should also work
+```
+
 # Introduction
 
 PyTorch3D provides efficient, reusable components for 3D Computer Vision research with [PyTorch](https://pytorch.org).
