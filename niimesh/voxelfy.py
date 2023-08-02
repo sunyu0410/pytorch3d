@@ -147,7 +147,7 @@ def to_mesh(voxels, value, device=None, align: str = "topleft", norm:bool=False,
     
     # If affine is not provided, use the identity matrix
     if affine is None:
-        affine = torch.eye(4).double()
+        affine = torch.eye(4).float()
     
     # Affine is in RAS
     # To LPS (default to load in 3D Slicer)
@@ -305,7 +305,7 @@ def to_mesh(voxels, value, device=None, align: str = "topleft", norm:bool=False,
     b = torch.index_select(b, 1, torch.tensor([2, 1, 0]))
 
     # verts_list = [(affine @ torch.column_stack([b, torch.ones(b.size(0))]).double().T).T[:,:3]]
-    verts_list = [(affine @ column_stack([b, torch.ones(b.size(0),1)]).double().T).T[:,:3]]
+    verts_list = [(affine @ column_stack([b, torch.ones(b.size(0),1)]).float().T).T[:,:3]]
 
     
     faces_list = [nface - idlenum[n][nface] for n, nface in enumerate(faces_list)]

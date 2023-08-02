@@ -15,9 +15,9 @@ class NiiMesh():
     
     def __post_init__(self):
         self.nii = nibabel.load(self.nii_path)
-        self.affine = torch.from_numpy(self.nii.affine)
+        self.affine = torch.from_numpy(self.nii.affine).float()
         self.numpy = self.nii.get_fdata()
-        self.voxels = torch.from_numpy(self.numpy).unsqueeze(0)
+        self.voxels = torch.from_numpy(self.numpy).unsqueeze(0).float()
         self.shape = self.numpy.shape
 
     def to_mesh(self):
@@ -35,6 +35,7 @@ class NiiMesh():
     
     @staticmethod
     def warp_point(grid, coord, shape):
+        # TODO - the order in shape should be checked at the end
         pt_img = warp_mesh.put_3d_com(coord, shape).view((1,1)+shape)
         pt_img_warp = F.grid_sample(pt_img.permute((0,1,4,3,2)), grid, align_corners=True).permute((0,1,4,3,2))
         return warp_mesh.get_3d_com(pt_img_warp.view((1,)+shape))
@@ -56,7 +57,7 @@ class NiiMesh():
 if __name__ == "__main__":
     affine_matrix = torch.tensor(
         [[
-          [1, 0, 0, 0.2],
+          [1, 0, 0, 0],
           [0, 1, 0, 0],
           [0, 0, 1, 0]
         ]],
