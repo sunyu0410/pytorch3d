@@ -23,8 +23,9 @@ class NiiMesh():
         self.voxels = torch.from_numpy(self.numpy).unsqueeze(0).float()
         self.shape = self.numpy.shape
 
-        self.mesh_affine = taubin_smoothing(to_mesh(self.voxels, self.value, affine=self.affine))
-        self.mesh = taubin_smoothing(to_mesh(self.voxels, self.value, affine=None))
+        # Two sets of meshes
+        self.mesh_affine = taubin_smoothing(to_mesh(self.voxels, self.value, affine=self.affine)) # For validation
+        self.mesh = taubin_smoothing(to_mesh(self.voxels, self.value, affine=None)) # For use
 
 
     def sample_points(self, n):
@@ -78,5 +79,10 @@ if __name__ == "__main__":
 
     print(f'COM: {com}')
 
-    # nmesh.to_mesh()
+    nmesh.sample_points(10)
+    nmesh.apply_grid_to_points(grid)
+    nmesh.apply_affine()
+
+    print(nmesh.points)
+
     # nmesh.save_obj('test_s.obj')

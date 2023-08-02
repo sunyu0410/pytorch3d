@@ -115,7 +115,7 @@ def to_mesh(voxels, value, device=None, align: str = "topleft", norm:bool=False,
     #* The main difference is that cubify will automatically normalise the dimensions
     #* This function can keep the dimensions absolute
     #* value: which discreate value in the contour to convert
-    #* affine: the affine matrix (in RAS)
+    #* affine: the affine matrix (in LPS)
 
 
     The alignment between the vertices of the cubified mesh and the voxel locations (or pixels)
