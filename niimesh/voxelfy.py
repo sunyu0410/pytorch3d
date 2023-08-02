@@ -145,14 +145,7 @@ def to_mesh(voxels, value, device=None, align: str = "topleft", norm:bool=False,
     if len(voxels) == 0:
         return Meshes(verts=[], faces=[])
     
-    # If affine is not provided, use the identity matrix
-    if affine is None:
-        affine = torch.eye(4).float()
-    
-    # Affine is in RAS
-    # To LPS (default to load in 3D Slicer)
-    # Flip first two rows
-    affine = (affine.T*torch.tensor([-1,-1,1,1])).T
+
 
     N, D, H, W = voxels.size()
 
@@ -301,12 +294,18 @@ def to_mesh(voxels, value, device=None, align: str = "topleft", norm:bool=False,
     idlenum = idleverts.cumsum(1)
 
     n = 0
-    b = grid_verts.index_select(0, (idleverts[n] == 0).nonzero(as_tuple=False)[:, 0])
-    b = torch.index_select(b, 1, torch.tensor([2, 1, 0]))
+    b = torch.index_select(
+            grid_verts.index_select(
+                0, (idleverts[n] == 0
+            ).nonzero(as_tuple=False)[:, 0]), 
+            1, 
+            torch.tensor([2, 1, 0])
+        )
 
-    # verts_list = [(affine @ torch.column_stack([b, torch.ones(b.size(0))]).double().T).T[:,:3]]
-    verts_list = [(affine @ column_stack([b, torch.ones(b.size(0),1)]).float().T).T[:,:3]]
-
+    if affine is not None:
+        verts_list = [(affine @ column_stack([b, torch.ones(b.size(0),1)]).float().T).T[:,:3]]
+    else:
+        verts_list = [b]
     
     faces_list = [nface - idlenum[n][nface] for n, nface in enumerate(faces_list)]
 

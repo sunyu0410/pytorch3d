@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import nibabel
-from voxelfy import to_mesh, taubin_smoothing
+from voxelfy import to_mesh, taubin_smoothing, column_stack
 from pytorch3d.io import save_obj
 import pytorch3d.ops
 import torch
@@ -15,18 +15,17 @@ class NiiMesh():
     
     def __post_init__(self):
         self.nii = nibabel.load(self.nii_path)
+
         self.affine = torch.from_numpy(self.nii.affine).float()
+        self.affine = (self.affine.T*torch.tensor([-1,-1,1,1])).T # RAS to LPS
+        
         self.numpy = self.nii.get_fdata()
         self.voxels = torch.from_numpy(self.numpy).unsqueeze(0).float()
         self.shape = self.numpy.shape
 
-    def to_mesh(self):
-        """
-        Convert the voxels to mesh"""
-        self.mesh = to_mesh(self.voxels, self.value, affine=self.affine)
+        self.mesh_affine = taubin_smoothing(to_mesh(self.voxels, self.value, affine=self.affine))
+        self.mesh = taubin_smoothing(to_mesh(self.voxels, self.value, affine=None))
 
-        if self.smooth:
-            self.mesh = taubin_smoothing(self.mesh)
 
     def sample_points(self, n):
         """Sample n pionts from the mesh"""
@@ -40,10 +39,14 @@ class NiiMesh():
         pt_img_warp = F.grid_sample(pt_img.permute((0,1,4,3,2)), grid, align_corners=True).permute((0,1,4,3,2))
         return warp_mesh.get_3d_com(pt_img_warp.view((1,)+shape))
         
-    def apply_deformation(self, grid):
+    def apply_grid_to_points(self, grid):
         """Apply a flow matrix"""
-        pass
+        # self.warp_point(grid, )
+        self.points = torch.stack([nmesh.warp_point(grid, p, nmesh.shape) for p in nmesh.points[0]]).unsqueeze(0)
 
+    def apply_affine(self):
+        self.points = [(nmesh.affine @ column_stack([self.points[0], torch.ones(self.points[0].size(0),1)]).T).T[:,:3]]
+    
     def get_verts_offset(self, grid):
         """Calculates the verts difference, which can be used in
         Meshes.offset_verts()
@@ -65,11 +68,12 @@ if __name__ == "__main__":
         requires_grad=True
     )
 
-    grid = F.affine_grid(affine_matrix, (1,1,100,100,3), align_corners=True)
-    coord = (2,2,2)
-    shape = (3, 100, 100)
-
     nmesh = NiiMesh('../objs/seg-test.nii.gz', 3)
+    
+    shape = nmesh.shape
+    grid = F.affine_grid(affine_matrix, (1,1,*reversed(shape)), align_corners=True)
+    coord = (2,2,2)
+
     com = nmesh.warp_point(grid, coord, shape)
 
     print(f'COM: {com}')
