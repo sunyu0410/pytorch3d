@@ -85,4 +85,5 @@ if __name__ == "__main__":
 
     print(nmesh.points)
 
-    # nmesh.save_obj('test_s.obj')
+    nmesh.save_obj('test_s.obj')
+    save_obj('test_s_affine.obj', nmesh.mesh_affine.verts_list()[0], nmesh.mesh_affine.faces_list()[0])

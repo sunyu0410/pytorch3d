@@ -107,16 +107,27 @@ def column_stack(tensors):
     return result
 
 @torch.no_grad()
-def to_mesh(voxels, value, device=None, align: str = "topleft", norm:bool=False, affine=None) -> Meshes:
-    r"""
+def to_mesh(voxels: torch.Tensor, value: int, device:bool=None, align:str="topleft", norm:bool=False, affine=None) -> Meshes:
+    """
     #* Create a mesh from a binary mask
-
     #* Modified from cubify()
     #* The main difference is that cubify will automatically normalise the dimensions
     #* This function can keep the dimensions absolute
-    #* value: which discreate value in the contour to convert
-    #* affine: the affine matrix (in LPS)
 
+    #* voxels: 
+    #* value: 
+    #* affine: 
+
+    
+
+
+    Args:
+        voxels (torch.Tensor): the pixel array of the mask
+        value (int): which discrete value in the contour to convert
+        device (bool, optional): which device. If None, use the same as voxels. Defaults to None.
+        align (str, optional): how to align the corners, can be "topleft", "corner" or "center". Defaults to "topleft".
+        norm (bool, optional): whether to scale the dimension. If True, will scale based on the original cubify(). If False, will keep the absolute dimension. Defaults to False.
+        affine (_type_, optional): the affine matrix (in LPS). If None, use an identity. Defaults to None.
 
     The alignment between the vertices of the cubified mesh and the voxel locations (or pixels)
     is defined by the choice of `align`. We support three modes, as shown below for a 2x2 grid:
@@ -134,6 +145,9 @@ def to_mesh(voxels, value, device=None, align: str = "topleft", norm:bool=False,
     pixel coordinate of the input grid.
     When `align="corner"`, then the corners of the output mesh span the whole grid.
     When `align="center"`, then the grid locations form the center of the cuboids.
+
+    Returns:
+        Meshes: the mesh of the mask.
     """
 
     if device is None:
