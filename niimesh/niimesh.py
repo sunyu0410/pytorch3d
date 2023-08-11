@@ -1,11 +1,18 @@
+import json
 from dataclasses import dataclass
+import pdb
+from copy import deepcopy
+
 import nibabel
 from voxelfy import to_mesh, taubin_smoothing, column_stack
 from pytorch3d.io import save_obj
 import pytorch3d.ops
 import torch
 import torch.nn.functional as F
+
 import warp_mesh
+import fiducial
+
 
 @dataclass
 class NiiMesh():
@@ -46,13 +53,32 @@ class NiiMesh():
         self.points = torch.stack([nmesh.warp_point(grid, p, nmesh.shape) for p in nmesh.points[0]]).unsqueeze(0)
 
     def apply_affine(self):
-        self.points = [(nmesh.affine @ column_stack([self.points[0], torch.ones(self.points[0].size(0),1)]).T).T[:,:3]]
+        self.points = [(self.affine @ column_stack([self.points[0], torch.ones(self.points[0].size(0),1)]).T).T[:,:3]]
     
     def get_verts_offset(self, grid):
         """Calculates the verts difference, which can be used in
         Meshes.offset_verts()
         """
         pass
+
+    def save_fiducial_pts(self, outfile):
+        # pdb.set_trace()
+        body = fiducial.markup.copy()
+        point_template = fiducial.point.copy()
+
+        for idx, point in enumerate(self.points[0].tolist(), 1):
+            
+            pt = deepcopy(point_template)
+            pt['controlPoints'][0]['position'] = point
+            pt['controlPoints'][0]['id'] = f"{idx}"
+            pt['controlPoints'][0]['label'] = f"{idx}"
+
+            body['markups'].append(pt)
+
+        
+        with open(outfile, 'w') as f:
+            json.dump(body, f)
+            
     
     def save_obj(self, path):
         save_obj(path, self.mesh.verts_list()[0], self.mesh.faces_list()[0])
@@ -82,6 +108,7 @@ if __name__ == "__main__":
     nmesh.sample_points(10)
     nmesh.apply_grid_to_points(grid)
     nmesh.apply_affine()
+    nmesh.save_fiducial_pts('f_points.json')
 
     print(nmesh.points)
 
