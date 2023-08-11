@@ -1,11 +1,6 @@
 markup = {
     "@schema": "https://raw.githubusercontent.com/slicer/slicer/master/Modules/Loadable/Markups/Resources/Schema/markups-schema-v1.0.3.json#",
-    "markups": [
-        
-    ]
-}
-
-point = {
+    "markups": [{
             "type": "Fiducial",
             "coordinateSystem": "LPS",
             "coordinateUnits": "mm",
@@ -14,18 +9,7 @@ point = {
             "labelFormat": "%N-%d",
             "lastUsedControlPointNumber": 1,
             "controlPoints": [
-                {
-                    "id": None,
-                    "label": None,
-                    "description": "",
-                    "associatedNodeID": "",
-                    "position": [],
-                    "orientation": [-1.0, -0.0, -0.0, -0.0, -1.0, -0.0, 0.0, 0.0, 1.0],
-                    "selected": True,
-                    "locked": False,
-                    "visibility": True,
-                    "positionStatus": "defined"
-                }
+                
             ],
             "measurements": [],
             "display": {
@@ -52,10 +36,26 @@ point = {
                 "lineColorFadingSaturation": 1.0,
                 "lineColorFadingHueOffset": 0.0,
                 "handlesInteractive": False,
-                "translationHandleVisibility": True,
-                "rotationHandleVisibility": True,
-                "scaleHandleVisibility": True,
+                "translationHandleVisibility": False,
+                "rotationHandleVisibility": False,
+                "scaleHandleVisibility": False,
                 "interactionHandleScale": 3.0,
                 "snapMode": "toVisibleSurface"
             }
         }
+        
+    ]
+}
+
+point = {
+    "id": None,
+    "label": None,
+    "description": "",
+    "associatedNodeID": "",
+    "position": [],
+    "orientation": [-1.0, -0.0, -0.0, -0.0, -1.0, -0.0, 0.0, 0.0, 1.0],
+    "selected": True,
+    "locked": False,
+    "visibility": True,
+    "positionStatus": "defined"
+}

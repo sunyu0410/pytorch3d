@@ -31,8 +31,8 @@ class NiiMesh():
         self.shape = self.numpy.shape
 
         # Two sets of meshes
-        self.mesh_affine = taubin_smoothing(to_mesh(self.voxels, self.value, affine=self.affine)) # For validation
-        self.mesh = taubin_smoothing(to_mesh(self.voxels, self.value, affine=None)) # For use
+        self.mesh_affine = taubin_smoothing(to_mesh(self.voxels, self.value, align='center', affine=self.affine)) # For validation
+        self.mesh = taubin_smoothing(to_mesh(self.voxels, self.value, align='center', affine=None)) # For use
 
 
     def sample_points(self, n):
@@ -69,15 +69,15 @@ class NiiMesh():
         for idx, point in enumerate(self.points[0].tolist(), 1):
             
             pt = deepcopy(point_template)
-            pt['controlPoints'][0]['position'] = point
-            pt['controlPoints'][0]['id'] = f"{idx}"
-            pt['controlPoints'][0]['label'] = f"{idx}"
+            pt['position'] = point
+            pt['id'] = f"{idx}"
+            pt['label'] = f"pt-{idx}"
 
-            body['markups'].append(pt)
+            body['markups'][0]['controlPoints'].append(pt)
 
         
         with open(outfile, 'w') as f:
-            json.dump(body, f)
+            json.dump(body, f, indent=2)
             
     
     def save_obj(self, path):
